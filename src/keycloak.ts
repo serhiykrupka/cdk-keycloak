@@ -7,6 +7,7 @@ import {
   aws_rds as rds,
   aws_secretsmanager as secretsmanager,
 } from 'aws-cdk-lib';
+import { IVpc } from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 
 // regional availibility for aurora serverless
@@ -34,75 +35,79 @@ const AURORA_SERVERLESS_SUPPORTED_REGIONS = [
  */
 export class KeycloakVersion {
   /**
-   * Keycloak version 12.0.4
-   */
+     * Keycloak version 12.0.4
+     */
   public static readonly V12_0_4 = KeycloakVersion.of('12.0.4');
 
   /**
-   * Keycloak version 15.0.0
-   */
+     * Keycloak version 15.0.0
+     */
   public static readonly V15_0_0 = KeycloakVersion.of('15.0.0');
 
   /**
-   * Keycloak version 15.0.1
-   */
+     * Keycloak version 15.0.1
+     */
   public static readonly V15_0_1 = KeycloakVersion.of('15.0.1');
 
   /**
-   * Keycloak version 15.0.2
-   */
+     * Keycloak version 15.0.2
+     */
   public static readonly V15_0_2 = KeycloakVersion.of('15.0.2');
 
   /**
-   * Keycloak version 16.1.1
-   */
+     * Keycloak version 16.1.1
+     */
   public static readonly V16_1_1 = KeycloakVersion.of('16.1.1');
 
   /**
-   * Keycloak version 17.0.1
-   */
+     * Keycloak version 17.0.1
+     */
   public static readonly V17_0_1 = KeycloakVersion.of('17.0.1');
 
   /**
-   * Keycloak version 18.0.2
-   */
+     * Keycloak version 18.0.2
+     */
   public static readonly V18_0_2 = KeycloakVersion.of('18.0.2');
 
   /**
-   * Keycloak version 19.0.3
-   */
+     * Keycloak version 19.0.3
+     */
   public static readonly V19_0_3 = KeycloakVersion.of('19.0.3');
 
   /**
-   * Keycloak version 20.0.5
-   */
+     * Keycloak version 20.0.5
+     */
   public static readonly V20_0_5 = KeycloakVersion.of('20.0.5');
 
   /**
-   * Keycloak version 21.0.0
-   */
+     * Keycloak version 21.0.0
+     */
   public static readonly V21_0_0 = KeycloakVersion.of('21.0.0');
 
   /**
-   * Keycloak version 21.0.1
-   */
+     * Keycloak version 21.0.1
+     */
   public static readonly V21_0_1 = KeycloakVersion.of('21.0.1');
 
   /**
-   * Keycloak version 22.0.4
-   */
+     * Keycloak version 22.0.4
+     */
   public static readonly V22_0_4 = KeycloakVersion.of('22.0.4');
 
   /**
-   * Custom cluster version
-   * @param version custom version number
-   */
-  public static of(version: string) { return new KeycloakVersion(version); }
+     * Custom cluster version
+     * @param version custom version number
+     */
+  public static of(version: string) {
+    return new KeycloakVersion(version);
+  }
+
   /**
-   *
-   * @param version cluster version number
-   */
-  private constructor(public readonly version: string) { }
+     *
+     * @param version cluster version number
+     */
+  private constructor(public readonly version: string) {
+  }
 }
 
 interface dockerImageMap {
@@ -120,183 +125,189 @@ const KEYCLOAK_DOCKER_IMAGE_URI_MAP: dockerImageMap = {
  */
 export interface AutoScaleTask {
   /**
-   * The minimal count of the task number
-   *
-   * @default - nodeCount
-   */
+     * The minimal count of the task number
+     *
+     * @default - nodeCount
+     */
   readonly min?: number;
   /**
-   * The maximal count of the task number
-   *
-   * @default - min + 5
-   */
+     * The maximal count of the task number
+     *
+     * @default - min + 5
+     */
   readonly max?: number;
   /**
-   * The target cpu utilization for the service autoscaling
-   *
-   * @default 75
-   */
+     * The target cpu utilization for the service autoscaling
+     *
+     * @default 75
+     */
   readonly targetCpuUtilization?: number;
 }
 
 export interface KeyCloakProps {
+
   /**
-   * The Keycloak version for the cluster.
-   */
+     * identifier of deployment
+     */
+  readonly identifier: string;
+
+  /**
+     * The Keycloak version for the cluster.
+     */
   readonly keycloakVersion: KeycloakVersion;
   /**
-   * The environment variables to pass to the keycloak container
-   */
+     * The environment variables to pass to the keycloak container
+     */
   readonly env?: { [key: string]: string };
   /**
-   * VPC for the workload
-   */
+     * VPC for the workload
+     */
   readonly vpc?: ec2.IVpc;
   /**
-   * ACM certificate ARN to import
-   */
+     * ACM certificate ARN to import
+     */
   readonly certificateArn: string;
   /**
-   * Create a bastion host for debugging or trouble-shooting
-   *
-   * @default false
-   */
+     * Create a bastion host for debugging or trouble-shooting
+     *
+     * @default false
+     */
   readonly bastion?: boolean;
   /**
-   * Number of keycloak node in the cluster
-   *
-   * @default 2
-   */
+     * Number of keycloak node in the cluster
+     *
+     * @default 2
+     */
   readonly nodeCount?: number;
   /**
-   * VPC public subnets for ALB
-   *
-   * @default - VPC public subnets
-   */
+     * VPC public subnets for ALB
+     *
+     * @default - VPC public subnets
+     */
   readonly publicSubnets?: ec2.SubnetSelection;
   /**
-   * VPC private subnets for keycloak service
-   *
-   * @default - VPC private subnets
-   */
+     * VPC private subnets for keycloak service
+     *
+     * @default - VPC private subnets
+     */
   readonly privateSubnets?: ec2.SubnetSelection;
   /**
-   * VPC subnets for database
-   *
-   * @default - VPC isolated subnets
-   */
+     * VPC subnets for database
+     *
+     * @default - VPC isolated subnets
+     */
   readonly databaseSubnets?: ec2.SubnetSelection;
   /**
-   * Database instance type
-   *
-   * @default r5.large
-   */
+     * Database instance type
+     *
+     * @default r5.large
+     */
   readonly databaseInstanceType?: ec2.InstanceType;
   /**
-   * The database instance engine
-   *
-   * @default - MySQL 8.0.34
-   */
+     * The database instance engine
+     *
+     * @default - MySQL 8.0.34
+     */
   readonly instanceEngine?: rds.IInstanceEngine;
   /**
-   * The database cluster engine
-   *
-   * @default rds.AuroraMysqlEngineVersion.VER_3_04_0
-   */
+     * The database cluster engine
+     *
+     * @default rds.AuroraMysqlEngineVersion.VER_3_04_0
+     */
   readonly clusterEngine?: rds.IClusterEngine;
   /**
-   * Whether to use aurora serverless. When enabled, the `databaseInstanceType` and
-   * `engine` will be ignored. The `rds.DatabaseClusterEngine.AURORA_MYSQL` will be used as
-   * the default cluster engine instead.
-   *
-   * @default false
-   */
+     * Whether to use aurora serverless. When enabled, the `databaseInstanceType` and
+     * `engine` will be ignored. The `rds.DatabaseClusterEngine.AURORA_MYSQL` will be used as
+     * the default cluster engine instead.
+     *
+     * @default false
+     */
   readonly auroraServerless?: boolean;
   /**
-   * Whether to use aurora serverless v2. When enabled, the `databaseInstanceType` will be ignored.
-   *
-   * @default false
-   */
+     * Whether to use aurora serverless v2. When enabled, the `databaseInstanceType` will be ignored.
+     *
+     * @default false
+     */
   readonly auroraServerlessV2?: boolean;
   /**
-   * Whether to use single RDS instance rather than RDS cluster. Not recommended for production.
-   *
-   * @default false
-   */
+     * Whether to use single RDS instance rather than RDS cluster. Not recommended for production.
+     *
+     * @default false
+     */
   readonly singleDbInstance?: boolean;
   /**
-   * database backup retension
-   *
-   * @default - 7 days
-   */
+     * database backup retension
+     *
+     * @default - 7 days
+     */
   readonly backupRetention?: cdk.Duration;
   /**
-   * The sticky session duration for the keycloak workload with ALB.
-   *
-   * @default - one day
-   */
+     * The sticky session duration for the keycloak workload with ALB.
+     *
+     * @default - one day
+     */
   readonly stickinessCookieDuration?: cdk.Duration;
   /**
-   * Autoscaling for the ECS Service
-   *
-   * @default - no ecs service autoscaling
-   */
+     * Autoscaling for the ECS Service
+     *
+     * @default - no ecs service autoscaling
+     */
   readonly autoScaleTask?: AutoScaleTask;
 
   /**
-   * Whether to put the load balancer in the public or private subnets
-   *
-   * @default true
-   */
+     * Whether to put the load balancer in the public or private subnets
+     *
+     * @default true
+     */
   readonly internetFacing?: boolean;
 
   /**
-   * The hostname to use for the keycloak server
-   */
+     * The hostname to use for the keycloak server
+     */
   readonly hostname?: string;
 
   /**
-   * The minimum number of Aurora Serverless V2 capacity units.
-   *
-   * @default 0.5
-  */
+     * The minimum number of Aurora Serverless V2 capacity units.
+     *
+     * @default 0.5
+     */
   readonly databaseMinCapacity?: number;
 
   /**
-  * The maximum number of Aurora Serverless V2 capacity units.
-  *
-   * @default 10
-   */
+     * The maximum number of Aurora Serverless V2 capacity units.
+     *
+     * @default 10
+     */
   readonly databaseMaxCapacity?: number;
 
   /**
-   * Controls what happens to the database if it stops being managed by CloudFormation
-   *
-   * @default RemovalPolicy.RETAIN
-   */
+     * Controls what happens to the database if it stops being managed by CloudFormation
+     *
+     * @default RemovalPolicy.RETAIN
+     */
   readonly databaseRemovalPolicy?: cdk.RemovalPolicy;
 
   /**
-   * Overrides the default image
-   *
-   * @default quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}
-   */
+     * Overrides the default image
+     *
+     * @default quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}
+     */
   readonly containerImage?: ecs.ContainerImage;
 
   /**
-   * The number of cpu units used by the keycloak task.
-   *
-   * @default 4096
-   * @see FargateTaskDefinitionProps
-   */
+     * The number of cpu units used by the keycloak task.
+     *
+     * @default 4096
+     * @see FargateTaskDefinitionProps
+     */
   readonly taskCpu?: number;
 
   /**
-   * The amount (in MiB) of memory used by the keycloak task.
-   *
-   * @default 8192
-   * @see FargateTaskDefinitionProps
-   */
+     * The amount (in MiB) of memory used by the keycloak task.
+     *
+     * @default 8192
+     * @see FargateTaskDefinitionProps
+     */
   readonly taskMemory?: number;
 
 }
@@ -306,6 +317,7 @@ export class KeyCloak extends Construct {
   readonly db?: Database;
   readonly applicationLoadBalancer: elbv2.ApplicationLoadBalancer;
   readonly keycloakSecret: secretsmanager.ISecret;
+
   constructor(scope: Construct, id: string, props: KeyCloakProps) {
     super(scope, id);
 
@@ -317,7 +329,7 @@ export class KeyCloak extends Construct {
     }
 
     this.keycloakSecret = this._generateKeycloakSecret();
-    this.vpc = props.vpc ?? getOrCreateVpc(this);
+    this.vpc = props.vpc ?? getOrCreateVpc(this, props);
 
     this.db = this.addDatabase({
       vpc: this.vpc,
@@ -358,12 +370,15 @@ export class KeyCloak extends Construct {
       cdk.Stack.of(this).templateOptions.description = '(SO8021) - Deploy keycloak on AWS with cdk-keycloak construct library';
     }
   }
+
   public addDatabase(props: DatabaseProps): Database {
     return new Database(this, 'Database', props);
   }
+
   public addKeyCloakContainerService(props: ContainerServiceProps) {
     return new ContainerService(this, 'KeyCloakContainerService', props);
   }
+
   private _generateKeycloakSecret(): secretsmanager.ISecret {
     return new secretsmanager.Secret(this, 'KCSecret', {
       generateSecretString: {
@@ -377,75 +392,81 @@ export class KeyCloak extends Construct {
 }
 
 export interface DatabaseProps {
+
   /**
-   * The VPC for the database
-   */
+     * identifier of deployment
+     */
+  readonly identifier?: string;
+
+  /**
+     * The VPC for the database
+     */
   readonly vpc: ec2.IVpc;
   /**
-   * VPC subnets for database
-   */
+     * VPC subnets for database
+     */
   readonly databaseSubnets?: ec2.SubnetSelection;
   /**
-   * The database instance type
-   *
-   * @default r5.large
-   */
+     * The database instance type
+     *
+     * @default r5.large
+     */
   readonly instanceType?: ec2.InstanceType;
   /**
-   * The database instance engine
-   *
-   * @default - MySQL 8.0.34
-   */
+     * The database instance engine
+     *
+     * @default - MySQL 8.0.34
+     */
   readonly instanceEngine?: rds.IInstanceEngine;
   /**
-   * The database cluster engine
-   *
-   * @default rds.AuroraMysqlEngineVersion.VER_3_04_0
-   */
+     * The database cluster engine
+     *
+     * @default rds.AuroraMysqlEngineVersion.VER_3_04_0
+     */
   readonly clusterEngine?: rds.IClusterEngine;
   /**
-   * enable aurora serverless
-   *
-   * @default false
-   */
+     * enable aurora serverless
+     *
+     * @default false
+     */
   readonly auroraServerless?: boolean;
   /**
-   * enable aurora serverless v2
-   *
-   * @default false
-   */
+     * enable aurora serverless v2
+     *
+     * @default false
+     */
   readonly auroraServerlessV2?: boolean;
 
   /**
-   * Whether to use single RDS instance rather than RDS cluster. Not recommended for production.
-   *
-   * @default false
-   */
+     * Whether to use single RDS instance rather than RDS cluster. Not recommended for production.
+     *
+     * @default false
+     */
   readonly singleDbInstance?: boolean;
   /**
-   * database backup retension
-   *
-   * @default - 7 days
-   */
+     * database backup retension
+     *
+     * @default - 7 days
+     */
   readonly backupRetention?: cdk.Duration;
   /**
-   * The minimum number of Aurora Serverless V2 capacity units.
-   *
-   * @default 0.5
-  */
+     * The minimum number of Aurora Serverless V2 capacity units.
+     *
+     * @default 0.5
+     */
   readonly minCapacity?: number;
   /**
-   * The maximum number of Aurora Serverless V2 capacity units.
-   *
-   * @default 10
-   */
+     * The maximum number of Aurora Serverless V2 capacity units.
+     *
+     * @default 10
+     */
   readonly maxCapacity?: number;
 
   /**
-   * Controls what happens to the database if it stops being managed by CloudFormation
-   *
-   * @default RemovalPolicy.RETAIN
-   */
+     * Controls what happens to the database if it stops being managed by CloudFormation
+     *
+     * @default RemovalPolicy.RETAIN
+     */
   readonly removalPolicy?: cdk.RemovalPolicy;
 }
 
@@ -454,21 +475,25 @@ export interface DatabaseProps {
  */
 export interface DatabaseConfig {
   /**
-   * The database secret.
-   */
+     * The database secret.
+     */
   readonly secret: secretsmanager.ISecret;
   /**
-   * The database connnections.
-   */
+     * The database connnections.
+     */
   readonly connections: ec2.Connections;
   /**
-   * The endpoint address for the database.
-   */
+     * The endpoint address for the database.
+     */
   readonly endpoint: string;
   /**
-   * The databasae identifier.
-   */
+     * The databasae identifier.
+     */
   readonly identifier: string;
+}
+
+function getIdentifier(props: DatabaseProps | ContainerServiceProps | KeyCloakProps) {
+  return props.identifier ? `${props.identifier}-keycloak` : undefined;
 }
 
 /**
@@ -507,8 +532,10 @@ export class Database extends Construct {
     printOutput(this, 'clusterEndpointHostname', this.clusterEndpointHostname);
     printOutput(this, 'clusterIdentifier', this.clusterIdentifier);
   }
+
   private _createRdsInstance(props: DatabaseProps): DatabaseConfig {
     const dbInstance = new rds.DatabaseInstance(this, 'DBInstance', {
+      instanceIdentifier: `${props.identifier}-keycloak`,
       vpc: props.vpc,
       databaseName: 'keycloak',
       vpcSubnets: props.databaseSubnets,
@@ -530,6 +557,7 @@ export class Database extends Construct {
       secret: dbInstance.secret!,
     };
   }
+
   // create a RDS for MySQL DB cluster
   private _createRdsCluster(props: DatabaseProps): DatabaseConfig {
     const instanceProps = {
@@ -537,6 +565,7 @@ export class Database extends Construct {
       isFromLegacyInstanceProps: true,
     };
     const dbCluster = new rds.DatabaseCluster(this, 'DBCluster', {
+      clusterIdentifier: getIdentifier(props),
       engine: props.clusterEngine ?? rds.DatabaseClusterEngine.auroraMysql({
         version: rds.AuroraMysqlEngineVersion.VER_3_04_0,
       }),
@@ -569,9 +598,11 @@ export class Database extends Construct {
       secret: dbCluster.secret!,
     };
   }
+
   private _createServerlessCluster(props: DatabaseProps): DatabaseConfig {
     const dbCluster = new rds.ServerlessCluster(this, 'AuroraServerlessCluster', {
       engine: rds.DatabaseClusterEngine.AURORA_MYSQL,
+      clusterIdentifier: getIdentifier(props),
       vpc: props.vpc,
       defaultDatabaseName: 'keycloak',
       vpcSubnets: props.databaseSubnets,
@@ -588,6 +619,7 @@ export class Database extends Construct {
       secret: dbCluster.secret!,
     };
   }
+
   // create a RDS for MySQL DB cluster with Aurora Serverless v2
   private _createServerlessV2Cluster(props: DatabaseProps): DatabaseConfig {
     const instanceProps = {
@@ -596,6 +628,7 @@ export class Database extends Construct {
       isFromLegacyInstanceProps: true,
     };
     const dbCluster = new rds.DatabaseCluster(this, 'DBCluster', {
+      clusterIdentifier: getIdentifier(props),
       engine: props.clusterEngine ?? rds.DatabaseClusterEngine.auroraMysql({
         version: rds.AuroraMysqlEngineVersion.VER_3_04_0,
       }),
@@ -641,107 +674,114 @@ export class Database extends Construct {
 }
 
 export interface ContainerServiceProps {
+
   /**
-   * The environment variables to pass to the keycloak container
-   */
+     * identifier of deployment
+     */
+  readonly identifier?: string;
+
+  /**
+     * The environment variables to pass to the keycloak container
+     */
   readonly env?: { [key: string]: string };
   /**
-   * Keycloak version for the container image
-   */
+     * Keycloak version for the container image
+     */
   readonly keycloakVersion: KeycloakVersion;
   /**
-   * The VPC for the service
-   */
+     * The VPC for the service
+     */
   readonly vpc: ec2.IVpc;
   /**
-   * VPC subnets for keycloak service
-   */
+     * VPC subnets for keycloak service
+     */
   readonly privateSubnets?: ec2.SubnetSelection;
   /**
-   * VPC public subnets for ALB
-   */
+     * VPC public subnets for ALB
+     */
   readonly publicSubnets?: ec2.SubnetSelection;
   /**
-   * The RDS database for the service
-   */
+     * The RDS database for the service
+     */
   readonly database: Database;
   /**
-   * The secrets manager secret for the keycloak
-   */
+     * The secrets manager secret for the keycloak
+     */
   readonly keycloakSecret: secretsmanager.ISecret;
   /**
-   * The ACM certificate
-   */
+     * The ACM certificate
+     */
   readonly certificate: certmgr.ICertificate;
   /**
-   * Whether to create the bastion host
-   * @default false
-   */
+     * Whether to create the bastion host
+     * @default false
+     */
   readonly bastion?: boolean;
   /**
-   * Whether to enable the ECS service deployment circuit breaker
-   * @default false
-   */
+     * Whether to enable the ECS service deployment circuit breaker
+     * @default false
+     */
   readonly circuitBreaker?: boolean;
   /**
-   * Number of keycloak node in the cluster
-   *
-   * @default 1
-   */
+     * Number of keycloak node in the cluster
+     *
+     * @default 1
+     */
   readonly nodeCount?: number;
   /**
-   * The sticky session duration for the keycloak workload with ALB.
-   *
-   * @default - one day
-   */
+     * The sticky session duration for the keycloak workload with ALB.
+     *
+     * @default - one day
+     */
   readonly stickinessCookieDuration?: cdk.Duration;
 
   /**
-   * Autoscaling for the ECS Service
-   *
-   * @default - no ecs service autoscaling
-   */
+     * Autoscaling for the ECS Service
+     *
+     * @default - no ecs service autoscaling
+     */
   readonly autoScaleTask?: AutoScaleTask;
 
   /**
-   * Whether to put the put the load balancer in the public or private subnets
-   *
-   * @default true
-   */
+     * Whether to put the put the load balancer in the public or private subnets
+     *
+     * @default true
+     */
   readonly internetFacing?: boolean;
 
   /**
-   * The hostname to use for the keycloak server
-   */
+     * The hostname to use for the keycloak server
+     */
   readonly hostname?: string;
 
   /**
-   * Overrides the default image
-   *
-   * @default quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}
-   */
+     * Overrides the default image
+     *
+     * @default quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}
+     */
   readonly containerImage?: ecs.ContainerImage;
 
   /**
-   * The number of cpu units used by the keycloak task.
-   *
-   * @default 4096
-   * @see FargateTaskDefinitionProps
-   */
+     * The number of cpu units used by the keycloak task.
+     *
+     * @default 4096
+     * @see FargateTaskDefinitionProps
+     */
   readonly taskCpu?: number;
 
   /**
-   * The amount (in MiB) of memory used by the keycloak task.
-   *
-   * @default 8192
-   * @see FargateTaskDefinitionProps
-   */
+     * The amount (in MiB) of memory used by the keycloak task.
+     *
+     * @default 8192
+     * @see FargateTaskDefinitionProps
+     */
   readonly taskMemory?: number;
 }
 
 export class ContainerService extends Construct {
   readonly service: ecs.FargateService;
   readonly applicationLoadBalancer: elbv2.ApplicationLoadBalancer;
+
   constructor(scope: Construct, id: string, props: ContainerServiceProps) {
     super(scope, id);
 
@@ -751,7 +791,7 @@ export class ContainerService extends Construct {
     let workingDirectory = undefined;
     const image = props.containerImage ?? ecs.ContainerImage.fromRegistry(this.getKeyCloakDockerImageUri(props.keycloakVersion.version));
     const isQuarkusDistribution = parseInt(props.keycloakVersion.version.split('.')[0]) > 16;
-    let environment: {[key: string]: string} = {
+    let environment: { [key: string]: string } = {
       DB_ADDR: props.database.clusterEndpointHostname,
       DB_DATABASE: 'keycloak',
       DB_PORT: '3306',
@@ -766,7 +806,7 @@ export class ContainerService extends Construct {
       // KEYCLOAK_LOGLEVEL: 'DEBUG',
       PROXY_ADDRESS_FORWARDING: 'true',
     };
-    let secrets: {[key: string]: cdk.aws_ecs.Secret} = {
+    let secrets: { [key: string]: cdk.aws_ecs.Secret } = {
       DB_PASSWORD: ecs.Secret.fromSecretsManager(props.database.secret, 'password'),
       KEYCLOAK_USER: ecs.Secret.fromSecretsManager(props.keycloakSecret, 'username'),
       KEYCLOAK_PASSWORD: ecs.Secret.fromSecretsManager(props.keycloakSecret, 'password'),
@@ -775,8 +815,14 @@ export class ContainerService extends Construct {
       { containerPort: containerPort }, // HTTPS web port
       { containerPort: 7600 }, // jgroups-tcp
       { containerPort: 57600 }, // jgroups-tcp-fd
-      { containerPort: 55200, protocol: ecs.Protocol.UDP }, // jgroups-udp
-      { containerPort: 54200, protocol: ecs.Protocol.UDP }, // jgroups-udp-fd
+      {
+        containerPort: 55200,
+        protocol: ecs.Protocol.UDP,
+      }, // jgroups-udp
+      {
+        containerPort: 54200,
+        protocol: ecs.Protocol.UDP,
+      }, // jgroups-udp-fd
     ];
 
     // if this is a quarkus distribution
@@ -809,7 +855,11 @@ export class ContainerService extends Construct {
     }
 
     const vpc = props.vpc;
-    const cluster = new ecs.Cluster(this, 'Cluster', { vpc, containerInsights: true });
+    const cluster = new ecs.Cluster(this, 'Cluster', {
+      clusterName: getIdentifier(props),
+      vpc,
+      containerInsights: true,
+    });
     cluster.node.addDependency(props.database);
     const executionRole = new iam.Role(this, 'TaskRole', {
       assumedBy: new iam.CompositePrincipal(
@@ -871,7 +921,8 @@ export class ContainerService extends Construct {
       scaling.scaleOnCpuUtilization('CpuScaling', {
         targetUtilizationPercent: props.autoScaleTask.targetCpuUtilization ?? 75,
       });
-    };
+    }
+    ;
 
     this.applicationLoadBalancer = new elbv2.ApplicationLoadBalancer(this, 'ALB', {
       vpc,
@@ -914,6 +965,7 @@ export class ContainerService extends Construct {
       props.database.connections.allowDefaultPortFrom(bast);
     }
   }
+
   private getImageUriFromMap(map: dockerImageMap, version: string, id: string): string {
     const stack = cdk.Stack.of(this);
     if (cdk.Token.isUnresolved(stack.region)) {
@@ -932,6 +984,7 @@ export class ContainerService extends Construct {
       }
     }
   }
+
   private getKeyCloakDockerImageUri(version: string): string {
     return this.getImageUriFromMap(KEYCLOAK_DOCKER_IMAGE_URI_MAP, version, 'KeycloakImageMap');
   }
@@ -940,14 +993,19 @@ export class ContainerService extends Construct {
 /**
  * Create or import VPC
  * @param scope the cdk scope
+ * @param props key cloack properties
  */
-function getOrCreateVpc(scope: Construct): ec2.IVpc {
+function getOrCreateVpc(scope: Construct, props: KeyCloakProps): IVpc {
   // use an existing vpc or create a new one
   return scope.node.tryGetContext('use_default_vpc') === '1' ?
     ec2.Vpc.fromLookup(scope, 'Vpc', { isDefault: true }) :
     scope.node.tryGetContext('use_vpc_id') ?
       ec2.Vpc.fromLookup(scope, 'Vpc', { vpcId: scope.node.tryGetContext('use_vpc_id') }) :
-      new ec2.Vpc(scope, 'Vpc', { maxAzs: 3, natGateways: 1 });
+      new ec2.Vpc(scope, 'Vpc', {
+        vpcName: getIdentifier(props),
+        maxAzs: 3,
+        natGateways: 1,
+      });
 }
 
 function printOutput(scope: Construct, id: string, key: string | number) {
