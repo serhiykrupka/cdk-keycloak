@@ -13,12 +13,14 @@ export class IntegTesting {
     const env = {
       region: process.env.CDK_DEFAULT_REGION || 'us-east-1',
       account: process.env.CDK_DEFAULT_ACCOUNT,
+      identifier: process.env.IDENTIFIER,
     };
 
     const stack = new cdk.Stack(app, 'keycloak-demo', { env });
 
     // create a default keycloak workload with minimal required props
     new KeyCloak(stack, 'KeyCloak', {
+      identifier: env.identifier,
       certificateArn: stack.node.tryGetContext('ACM_CERT_ARN') || 'MOCK_ARN',
       keycloakVersion: KeycloakVersion.V22_0_4,
       hostname: 'hostname for keycloak server',
@@ -44,11 +46,13 @@ export class IntegTestingExistingVpcSubnets {
     const env = {
       region: process.env.CDK_DEFAULT_REGION,
       account: process.env.CDK_DEFAULT_ACCOUNT,
+      identifier: process.env.IDENTIFIER,
     };
 
     const stack = new cdk.Stack(app, 'keycloak-demo', { env });
 
     new KeyCloak(stack, 'KeyCloak', {
+      identifier: env.identifier,
       certificateArn: stack.node.tryGetContext('ACM_CERT_ARN') || 'MOCK_ARN',
       keycloakVersion: KeycloakVersion.V15_0_2,
       vpc: ec2.Vpc.fromLookup(stack, 'Vpc', { vpcId: 'vpc-0417e46d' }),
